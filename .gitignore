@@ -1,0 +1,12 @@
+# Target folder (compiled Maven build artifacts)
+target/
+
+# Eclipse specific files
+.settings/
+.project
+.classpath
+.factorypath
+
+# OS files
+.DS_Store
+Thumbs.db
