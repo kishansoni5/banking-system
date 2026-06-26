@@ -2,17 +2,35 @@ package com.banking.model;
 
 import java.math.BigDecimal;
 
+import jakarta.persistence.Column;
+import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
+import jakarta.persistence.Id;
+import jakarta.persistence.Table;
+
 // No Spring annotation here — this is a plain POJO
 // Spring does NOT need to manage this object
 // It is just data — created and passed around by our service layer
+@Entity
+@Table(name="accounts")
 public class Account {
 
+	@Id
     private String id;           // "ACC001" format — readable and flexible
+	
+	@Column(nullable = false)
     private String holderName;   // account owner's name
+	
+	@Column(nullable = false)
     private BigDecimal balance;  // BigDecimal — NEVER use double for money
                                  // 0.1 + 0.2 = 0.30000000000000004 in double
                                  // BigDecimal gives exact precision
+    @Enumerated(EnumType.STRING)
     private AccountType accountType; // SAVINGS or CURRENT — modeled as enum
+	
+	 protected Account() {
+	    }
 
     // Constructor — used by service layer to create new accounts
     public Account(String id, String holderName, 

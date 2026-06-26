@@ -69,6 +69,19 @@ public class AccountController {
 
         return ResponseEntity.ok(accounts);
     }
+    
+    /**
+     * Get account by id.
+     *
+     * GET /accounts/{id}
+     */
+    @GetMapping("/{id}")
+    public ResponseEntity<Account> getAccountById(@PathVariable String id) {
+
+        Account account = accountService.getAccountById(id);
+
+        return ResponseEntity.ok(account);
+    }
 
     /**
      * Check balance for a specific account.

@@ -48,6 +48,12 @@ public class AccountServiceImpl implements AccountService {
         this.paymentStrategy = paymentStrategy;
     }
 
+    public Account getAccountById(String id) {
+        return accountRepository.findById(id)
+                .orElseThrow(() ->
+                        new AccountNotFoundException("Account not found: " + id));
+    }
+    
     @Override
     public Account createAccount(String holderName, AccountType accountType) {
 
