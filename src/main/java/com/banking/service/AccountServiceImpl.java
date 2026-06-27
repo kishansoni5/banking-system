@@ -48,7 +48,7 @@ public class AccountServiceImpl implements AccountService {
         this.paymentStrategy = paymentStrategy;
     }
 
-    public Account getAccountById(String id) {
+    public Account getAccountOrThrow(String id) {
         return accountRepository.findById(id)
                 .orElseThrow(() ->
                         new AccountNotFoundException("Account not found: " + id));
@@ -95,8 +95,7 @@ public class AccountServiceImpl implements AccountService {
         }
 
         // Fetch account — Optional forces us to handle "not found"
-        Account account = accountRepository.findById(accountId)
-            .orElseThrow(() -> new AccountNotFoundException(accountId));
+        Account account = getAccountOrThrow(accountId);
 
         // Apply deposit — update balance
         BigDecimal newBalance = account.getBalance().add(amount);
@@ -128,8 +127,7 @@ public class AccountServiceImpl implements AccountService {
             );
         }
 
-        Account account = accountRepository.findById(accountId)
-            .orElseThrow(() -> new AccountNotFoundException(accountId));
+        Account account = getAccountOrThrow(accountId);
 
         // Business rule 2 — cannot withdraw more than balance
         if (amount.compareTo(account.getBalance()) > 0) {
@@ -153,9 +151,7 @@ public class AccountServiceImpl implements AccountService {
     @Override
     public BigDecimal checkBalance(String accountId) {
 
-        Account account = accountRepository.findById(accountId)
-            .orElseThrow(() -> new AccountNotFoundException(accountId));
-
+        Account account = getAccountOrThrow(accountId);
         System.out.println("✅ Balance retrieved!");
         System.out.println("   Account ID  : " + accountId);
         System.out.println("   Holder Name : " + account.getHolderName());
@@ -191,14 +187,10 @@ public class AccountServiceImpl implements AccountService {
         }
 
         // Find source account
-        Account sourceAccount = accountRepository.findById(sourceAccountId)
-                .orElseThrow(() ->
-                        new AccountNotFoundException(sourceAccountId));
+        Account sourceAccount = getAccountOrThrow(sourceAccountId);
 
         // Find target account
-        Account targetAccount = accountRepository.findById(targetAccountId)
-                .orElseThrow(() ->
-                        new AccountNotFoundException(targetAccountId));
+        Account targetAccount =getAccountOrThrow(targetAccountId);
 
         // Check sufficient balance
         if (amount.compareTo(sourceAccount.getBalance()) > 0) {
@@ -229,11 +221,9 @@ public class AccountServiceImpl implements AccountService {
     @Override
     public void deleteAccount(String accountId) {
 
-        if (!accountRepository.existsById(accountId)) {
-            throw new AccountNotFoundException(accountId);
-        }
-
-        accountRepository.deleteById(accountId);
+        
+    	Account account = getAccountOrThrow(accountId);
+    	accountRepository.delete(account);
 
         System.out.println("✅ Account deleted: " + accountId);
     }
@@ -248,9 +238,7 @@ public class AccountServiceImpl implements AccountService {
                     "Holder name cannot be empty");
         }
 
-        Account account = accountRepository.findById(accountId)
-                .orElseThrow(() ->
-                        new AccountNotFoundException(accountId));
+        Account account = getAccountOrThrow(accountId);
 
         account.setHolderName(holderName);
 
@@ -258,4 +246,6 @@ public class AccountServiceImpl implements AccountService {
 
         return account;
     }
+
+	
 }

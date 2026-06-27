@@ -78,7 +78,7 @@ public class AccountController {
     @GetMapping("/{id}")
     public ResponseEntity<Account> getAccountById(@PathVariable String id) {
 
-        Account account = accountService.getAccountById(id);
+        Account account = accountService.getAccountOrThrow(id);
 
         return ResponseEntity.ok(account);
     }

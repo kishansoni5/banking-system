@@ -17,5 +17,5 @@ public interface AccountService {
     void transfer(String fromAccountId,String toAccountId,BigDecimal amount);
     void deleteAccount(String accountId);
     Account updateAccount(String accountId,String holderName);
-	Account getAccountById(String id);
+	Account getAccountOrThrow(String id);
 }
