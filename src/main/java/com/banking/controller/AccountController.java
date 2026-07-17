@@ -3,6 +3,9 @@ package com.banking.controller;
 import java.math.BigDecimal;
 import java.util.List;
 
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.web.PageableDefault;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
@@ -13,6 +16,8 @@ import com.banking.dto.UpdateAccountRequest;
 import com.banking.dto.WithdrawRequest;
 import com.banking.model.Account;
 import com.banking.service.AccountService;
+
+import jakarta.validation.Valid;
 
 /**
  * REST Controller responsible for exposing banking operations
@@ -43,7 +48,7 @@ public class AccountController {
      */
     @PostMapping
     public ResponseEntity<Account> createAccount(
-            @RequestBody CreateAccountRequest request) {
+            @Valid @RequestBody CreateAccountRequest request) {
 
         Account account = accountService.createAccount(
                 request.holderName(),
@@ -63,9 +68,9 @@ public class AccountController {
      * GET /accounts
      */
     @GetMapping
-    public ResponseEntity<List<Account>> getAllAccounts() {
+    public ResponseEntity<Page<Account>> getAllAccounts(@PageableDefault(size=5) Pageable pageable) {
 
-        List<Account> accounts = accountService.getAllAccounts();
+        Page<Account> accounts = accountService.getAllAccounts(pageable);
 
         return ResponseEntity.ok(accounts);
     }
@@ -110,7 +115,7 @@ public class AccountController {
     @PostMapping("/{accountId}/deposit")
     public ResponseEntity<String> deposit(
             @PathVariable String accountId,
-            @RequestBody DepositRequest request) {
+            @Valid @RequestBody DepositRequest request) {
 
         accountService.deposit(
                 accountId,
@@ -128,7 +133,7 @@ public class AccountController {
     @PostMapping("/{accountId}/withdraw")
     public ResponseEntity<String> withdraw(
             @PathVariable String accountId,
-            @RequestBody WithdrawRequest request) {
+            @Valid @RequestBody WithdrawRequest request) {
 
         accountService.withdraw(
                 accountId,
@@ -145,7 +150,7 @@ public class AccountController {
      */
     @PostMapping("/transfer")
     public ResponseEntity<String> transfer(
-            @RequestBody TransferRequest request) {
+            @Valid @RequestBody TransferRequest request) {
 
         accountService.transfer(
                 request.sourceAccountId(),
@@ -168,7 +173,7 @@ public class AccountController {
     @PutMapping("/{accountId}")
     public ResponseEntity<Account> updateAccount(
             @PathVariable String accountId,
-            @RequestBody UpdateAccountRequest request) {
+            @Valid @RequestBody UpdateAccountRequest request) {
 
         Account updatedAccount =
                 accountService.updateAccount(

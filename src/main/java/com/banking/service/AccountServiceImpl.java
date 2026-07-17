@@ -1,5 +1,13 @@
 package com.banking.service;
 
+import java.math.BigDecimal;
+import java.util.UUID;
+
+import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
+import org.springframework.stereotype.Service;
+
 import com.banking.exception.AccountNotFoundException;
 import com.banking.exception.InsufficientBalanceException;
 import com.banking.exception.InvalidAmountException;
@@ -7,12 +15,6 @@ import com.banking.model.Account;
 import com.banking.model.AccountType;
 import com.banking.repository.AccountRepository;
 import com.banking.strategy.PaymentStrategy;
-import org.springframework.beans.factory.annotation.Qualifier;
-import org.springframework.stereotype.Service;
-
-import java.math.BigDecimal;
-import java.util.List;
-import java.util.UUID;
 
 // [CONCEPT: @Service]
 // Tells Spring: "this is a business logic bean"
@@ -161,10 +163,10 @@ public class AccountServiceImpl implements AccountService {
     }
 
     @Override
-    public List<Account> getAllAccounts() {
-        List<Account> accounts = accountRepository.findAll();
-        System.out.println("✅ Total accounts: " + accounts.size());
-        accounts.forEach(a -> System.out.println("   → " + a));
+    public Page<Account> getAllAccounts(Pageable pageable) {
+        Page<Account> accounts = accountRepository.findAll(pageable);
+        System.out.println("✅ Total accounts on page: " + accounts.getContent().size());
+        System.out.println("✅ Total accounts: " + accounts.getTotalElements());
         return accounts;
     }
 

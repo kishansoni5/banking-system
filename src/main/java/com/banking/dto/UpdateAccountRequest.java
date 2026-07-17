@@ -1,5 +1,7 @@
 package com.banking.dto;
 
-public record UpdateAccountRequest(String holderName) {
+import jakarta.validation.constraints.NotBlank;
+
+public record UpdateAccountRequest(@NotBlank String holderName) {
 
 }

@@ -2,8 +2,15 @@ package com.banking.dto;
 
 import java.math.BigDecimal;
 
-public record TransferRequest(String sourceAccountId,
+import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.Positive;
+
+public record TransferRequest(
+		@NotBlank
+		String sourceAccountId,
+		@NotBlank
         String targetAccountId,
+        @Positive
         BigDecimal amount) {
 
 }
