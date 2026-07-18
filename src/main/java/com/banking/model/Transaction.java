@@ -3,33 +3,86 @@ package com.banking.model;
 import java.math.BigDecimal;
 import java.time.LocalDateTime;
 
+import jakarta.persistence.Entity;
+import jakarta.persistence.EnumType;
+import jakarta.persistence.Enumerated;
+import jakarta.persistence.GeneratedValue;
+import jakarta.persistence.GenerationType;
+import jakarta.persistence.Id;
+import jakarta.persistence.JoinColumn;
+import jakarta.persistence.ManyToOne;
+import jakarta.persistence.Table;
+
 // Records what happened — deposit or withdrawal
-// Also a plain POJO — no Spring annotation
+@Entity
+@Table(name="transactions")
 public class Transaction {
 
-    private String accountId;         // which account this belongs to
-    private String type;              // "DEPOSIT" or "WITHDRAWAL"
-    private BigDecimal amount;        // how much
-    private LocalDateTime timestamp;  // when it happened
+	@Id
+	@GeneratedValue(strategy=GenerationType.IDENTITY)
+	private Long id;
+	private BigDecimal amount;        // how much
+	private LocalDateTime timestamp;  // when it happened
+	
+	@ManyToOne
+	@JoinColumn(name="account_id")
+    private Account account;         
+	
+	@Enumerated(EnumType.STRING)
+    private TransactionType type;
+	
+	public Transaction() {
+		
+	}
+	
+	public Transaction(Account account, TransactionType type,BigDecimal amount) {
+		super();
+		this.amount = amount;
+		this.timestamp = LocalDateTime.now();
+		this.account = account;
+		this.type = type;
+	}
+	
+	public Long getId() {
+		return id;
+	}
 
-    public Transaction(String accountId, String type, BigDecimal amount) {
-        this.accountId = accountId;
-        this.type = type;
-        this.amount = amount;
-        this.timestamp = LocalDateTime.now(); // auto-set at creation time
-    }
+	public void setId(Long id) {
+		this.id = id;
+	}
 
-    // Getters
-    public String getAccountId() { return accountId; }
-    public String getType() { return type; }
-    public BigDecimal getAmount() { return amount; }
-    public LocalDateTime getTimestamp() { return timestamp; }
+	public Account getAccount() {
+		return account;
+	}
 
-    @Override
-    public String toString() {
-        return String.format(
-            "Transaction[account=%s, type=%s, amount=%.2f, time=%s]",
-            accountId, type, amount, timestamp
-        );
-    }
-}
+	public void setAccount(Account account) {
+		this.account = account;
+	}
+
+	public TransactionType getType() {
+		return type;
+	}
+
+	public void setType(TransactionType type) {
+		this.type = type;
+	}
+
+	public BigDecimal getAmount() {
+		return amount;
+	}
+
+	public void setAmount(BigDecimal amount) {
+		this.amount = amount;
+	}
+
+	public LocalDateTime getTimestamp() {
+		return timestamp;
+	}
+
+	public void setTimestamp(LocalDateTime timestamp) {
+		this.timestamp = timestamp;
+	}          
+
+   
+   
+}	

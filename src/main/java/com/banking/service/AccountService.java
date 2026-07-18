@@ -2,7 +2,11 @@ package com.banking.service;
 
 import com.banking.model.Account;
 import com.banking.model.AccountType;
+import com.banking.model.Transaction;
+import com.banking.model.TransactionType;
+
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.util.List;
 
 import org.springframework.data.domain.Page;
@@ -21,4 +25,10 @@ public interface AccountService {
     void deleteAccount(String accountId);
     Account updateAccount(String accountId,String holderName);
 	Account getAccountOrThrow(String id);
+	public Page<Transaction> getTransactions(
+	        String accountId,
+	        TransactionType type,
+	        LocalDate startDate,
+	        LocalDate endDate,
+	        Pageable pageable);
 }

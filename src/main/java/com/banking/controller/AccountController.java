@@ -1,6 +1,7 @@
 package com.banking.controller;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
 import java.util.List;
 
 import org.springframework.data.domain.Page;
@@ -15,6 +16,8 @@ import com.banking.dto.TransferRequest;
 import com.banking.dto.UpdateAccountRequest;
 import com.banking.dto.WithdrawRequest;
 import com.banking.model.Account;
+import com.banking.model.Transaction;
+import com.banking.model.TransactionType;
 import com.banking.service.AccountService;
 
 import jakarta.validation.Valid;
@@ -101,6 +104,17 @@ public class AccountController {
                 accountService.checkBalance(accountId);
 
         return ResponseEntity.ok(balance);
+    }
+    
+    @GetMapping("/{accountId}/transactions")
+    public ResponseEntity<Page<Transaction>> getTransactions(
+    		@PageableDefault(size=5)Pageable pageable, 
+    		@RequestParam(required=false)TransactionType type,
+    		@RequestParam(required=false)LocalDate startDate,
+    		@RequestParam(required=false)LocalDate endDate,
+    		@PathVariable String accountId){
+    	Page<Transaction> transactions=accountService.getTransactions(accountId,type,startDate,endDate,pageable);
+    	return ResponseEntity.ok(transactions);
     }
 
     // =====================================================

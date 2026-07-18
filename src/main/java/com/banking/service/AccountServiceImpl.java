@@ -1,6 +1,10 @@
 package com.banking.service;
 
 import java.math.BigDecimal;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.LocalTime;
+import java.util.List;
 import java.util.UUID;
 
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -13,8 +17,14 @@ import com.banking.exception.InsufficientBalanceException;
 import com.banking.exception.InvalidAmountException;
 import com.banking.model.Account;
 import com.banking.model.AccountType;
+import com.banking.model.Transaction;
+import com.banking.model.TransactionType;
 import com.banking.repository.AccountRepository;
+import com.banking.repository.TransactionRepository;
 import com.banking.strategy.PaymentStrategy;
+
+import jakarta.transaction.Transactional;
+
 
 // [CONCEPT: @Service]
 // Tells Spring: "this is a business logic bean"
@@ -38,6 +48,7 @@ public class AccountServiceImpl implements AccountService {
 
     private final AccountRepository accountRepository;
     private final PaymentStrategy paymentStrategy;
+    private final TransactionRepository transactionRepository;
 
     // [CONCEPT: @Qualifier]
     // We have 3 PaymentStrategy implementations — UPI, Card, Cash
@@ -45,9 +56,10 @@ public class AccountServiceImpl implements AccountService {
     // @Qualifier("upiPayment") tells Spring exactly which bean to pick
     // Bean name defaults to class name with lowercase first letter
     public AccountServiceImpl(AccountRepository accountRepository,
-                               @Qualifier("upiPayment") PaymentStrategy paymentStrategy) {
+                               @Qualifier("upiPayment") PaymentStrategy paymentStrategy,TransactionRepository transactionRepository) {
         this.accountRepository = accountRepository;
         this.paymentStrategy = paymentStrategy;
+        this.transactionRepository =transactionRepository;
     }
 
     public Account getAccountOrThrow(String id) {
@@ -105,7 +117,9 @@ public class AccountServiceImpl implements AccountService {
 
         // Persist updated account
         accountRepository.save(account);
-
+        
+        Transaction transaction=new Transaction(account,TransactionType.DEPOSIT,amount);
+        transactionRepository.save(transaction);
         // Process payment via strategy
         // [CONCEPT: Strategy Pattern + DI]
         // We don't know or care if this is UPI/Card/Cash here
@@ -143,6 +157,9 @@ public class AccountServiceImpl implements AccountService {
         account.setBalance(newBalance);
 
         accountRepository.save(account);
+        
+        Transaction transaction=new Transaction(account,TransactionType.WITHDRAWAL,amount);
+        transactionRepository.save(transaction);
 
         System.out.println("✅ Amount withdrawn successfully!");
         System.out.println("   Account ID  : " + accountId);
@@ -171,6 +188,7 @@ public class AccountServiceImpl implements AccountService {
     }
 
     @Override
+    @Transactional
     public void transfer(
             String sourceAccountId,
             String targetAccountId,
@@ -211,6 +229,11 @@ public class AccountServiceImpl implements AccountService {
         // Save both accounts
         accountRepository.save(sourceAccount);
         accountRepository.save(targetAccount);
+        
+        Transaction transaction1=new Transaction(sourceAccount,TransactionType.TRANSFER_OUT,amount);
+        transactionRepository.save(transaction1);
+        Transaction transaction2=new Transaction(targetAccount,TransactionType.TRANSFER_IN,amount);
+        transactionRepository.save(transaction2);
 
         System.out.println("✅ Transfer successful!");
         System.out.println("   From Account : " + sourceAccountId);
@@ -248,6 +271,43 @@ public class AccountServiceImpl implements AccountService {
 
         return account;
     }
+    
+    @Override
+    public Page<Transaction> getTransactions(
+            String accountId,
+            TransactionType type,
+            LocalDate startDate,
+            LocalDate endDate,
+            Pageable pageable) {
 
-	
+        Account account = getAccountOrThrow(accountId);
+
+        // Filter by transaction type
+        if (type != null) {
+            return transactionRepository.findByAccountAndType(
+                    account,
+                    type,
+                    pageable);
+        }
+
+        // Filter by date range
+        if (startDate != null && endDate != null) {
+
+            LocalDateTime start = startDate.atStartOfDay();
+            LocalDateTime end = endDate.atTime(LocalTime.MAX);
+            System.out.println("Date filter is being used");
+
+            return transactionRepository.findByAccountAndTimestampBetween(
+                    account,
+                    start,
+                    end,
+                    pageable);
+        }
+
+        // No filter → return all transactions
+        return transactionRepository.findByAccount(
+                account,
+                pageable);
+    }
+ 
 }
