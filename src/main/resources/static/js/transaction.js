@@ -1,0 +1,58 @@
+async function loadTransactions() {
+    if (!currentAccountId) {
+        showMessage("Load an account first");
+        return;
+    }
+
+    try {
+        const response = await fetch(
+            `${BASE_URL}/accounts/${currentAccountId}/transactions?page=${currentPage}&size=${PAGE_SIZE}`,
+            { headers: getAuthHeaders() }
+        );
+
+        const page = await response.json();
+
+        if (!response.ok) {
+            showMessage(page.message || "Unable to load transactions");
+            return;
+        }
+
+        renderTransactions(page.content);
+
+        document.getElementById("previousBtn").disabled = page.first;
+        document.getElementById("nextBtn").disabled = page.last;
+
+    } catch (error) {
+        showMessage(error.message);
+    }
+}
+
+function renderTransactions(transactions) {
+    const table = document.getElementById("transactionTable");
+    let rows = "";
+
+    transactions.forEach(transaction => {
+        rows += `
+            <tr>
+                <td>${transaction.id}</td>
+                <td>${transaction.type}</td>
+                <td>₹${transaction.amount}</td>
+                <td>${transaction.timestamp}</td>
+            </tr>
+        `;
+    });
+
+    table.innerHTML = rows;
+}
+
+function nextPage() {
+    currentPage++;
+    loadTransactions();
+}
+
+function previousPage() {
+    if (currentPage > 0) {
+        currentPage--;
+    }
+    loadTransactions();
+}

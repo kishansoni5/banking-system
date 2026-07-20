@@ -27,17 +27,29 @@ public class SecurityConfig {
 	
 	@Bean
 	public SecurityFilterChain securityFilterChain(HttpSecurity http) throws Exception {
-		http
-	    .csrf(csrf -> csrf.disable())
-	    .sessionManagement(session ->
+	    http
+	        .csrf(csrf -> csrf.disable()) // Crucial for POST requests from JS without CSRF tokens
+	        .sessionManagement(session ->
 	            session.sessionCreationPolicy(SessionCreationPolicy.STATELESS))
-	    .authorizeHttpRequests(auth -> auth
+	        .authorizeHttpRequests(auth -> auth
+	            // 1. Allow all static resources (html, css, js, images, favicon)
+	            .requestMatchers(
+	                "/",
+	                "/index.html",
+	                "/css/**",
+	                "/js/**",
+	                "/images/**",
+	                "/favicon.ico",
+	                "/error"
+	            ).permitAll()
+	            // 2. Allow public auth endpoints
 	            .requestMatchers("/auth/**").permitAll()
-	            .anyRequest().authenticated())
-	    .addFilterBefore(jwtAuthenticationFilter,
-	            UsernamePasswordAuthenticationFilter.class);
-		
-		return http.build();
+	            // 3. Secure everything else
+	            .anyRequest().authenticated()
+	        )
+	        .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class);
+
+	    return http.build();
 	}
 	
 	@Bean
